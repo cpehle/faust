@@ -1,0 +1,9 @@
+*~
+[#]*[#]
+.\#*
+lib/*
+doc/*
+dist/*
+.cabal-sandbox/*
+TAGS
+cabal.sandbox.config
