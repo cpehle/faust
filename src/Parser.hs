@@ -1,4 +1,3 @@
--- | Parser of the platon language.
 module Parser where
 import           Control.Applicative ((<|>),(<$>),(<*>),(*>),(<**>),(<$),pure)
 import           Data.Char (generalCategory, GeneralCategory(MathSymbol), isLetter, isAlphaNum, isDigit, digitToInt)
@@ -14,11 +13,21 @@ import           Text.Parser.Token.Highlight
 import           Text.Parser.Token.Style
 import           Text.Trifecta.Parser
 
-platonCommentStyle :: CommentStyle
-platonCommentStyle = CommentStyle "" "" "%" False
+faustCommentStyle :: CommentStyle
+faustCommentStyle = CommentStyle "" "" "%" False
 
-platonReservedIdents :: [String]
-platonReservedIdents = ["let", "case", "merge", "receive", "module", "fn", "in", "forall"]
+faustReservedIdents :: [String]
+faustReservedIdents 
+  = [ "let"
+    , "match"
+    , "merge"
+    , "receive"
+    , "module"
+    , "fn"
+    , "with"
+    , "in"
+    , "forall"
+    ]
 
 aplSymbols :: String
 aplSymbols = ['⌶'..'⍺']
@@ -44,7 +53,7 @@ identifiers :: TokenParsing m => IdentifierStyle m
 identifiers = IdentifierStyle { _styleName = "identifier"
                               , _styleStart = satisfy isLetter <|> char '_'
                               , _styleLetter   = satisfy isAlphaNum <|> oneOf "_'"
-                              , _styleReserved = set platonReservedIdents
+                              , _styleReserved = set faustReservedIdents
                               , _styleHighlight = Identifier
                               , _styleReservedHighlight = ReservedIdentifier                     
                               }
@@ -113,6 +122,9 @@ parseTerm = do { whiteSpace
                ; eof
                ; return t } 
 
+-- atom :: Parser Syntax.Term
+-- atom = Syntax.Atom <$> (ident identifiers <|> ident operators)
+
 variable :: Parser Syntax.Term
 variable = Syntax.Variable <$> ident identifiers
          
@@ -163,13 +175,11 @@ rlet = do
 application :: Parser Syntax.Term
 application = foldl Syntax.App <$> atom <*> many atom
 {- 
-
    Grammar for types:
    ==================
    sig = rho | forall tv1 .. tvn . rho
    rho = tv  | base | sig -> rho
    base = Integer | Bool | Rational
-
 -}            
 
 sigma :: Parser Syntax.Type

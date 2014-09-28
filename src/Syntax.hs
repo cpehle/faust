@@ -20,6 +20,7 @@ data Term
   | Let Name Term Term
   | App Term Term
   | Lit Literal
+  | Atom String
   deriving Show
            
 type Unique = Int
