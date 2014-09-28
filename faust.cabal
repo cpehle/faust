@@ -63,6 +63,8 @@ executable faust
   -- Other library packages from which modules are imported.
   build-depends:       base >=4.7 && <4.8,
                        bytestring,
+                       llvm-general,
+                       llvm-general-pure,
                        optparse-applicative,
                        parsers,
                        trifecta,

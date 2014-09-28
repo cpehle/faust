@@ -108,6 +108,7 @@ data Constraint v tv s where
 unify = undefined
 getState = undefined
 register = undefined
+
 solve' env c = case c of
   CTrue -> undefined
   CConj c1 c2 -> do solve env c1
@@ -115,4 +116,5 @@ solve' env c = case c of
   CEq v w -> unify v w
   CExist v c -> do s <- getState
                    register s v
-                   undefined
+                   solve env c
+
