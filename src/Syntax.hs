@@ -2,6 +2,8 @@
 module Syntax where
 
 import Data.IORef
+import qualified LLVM.General.AST.Type as LLVM
+
 
 type Name = String
 
@@ -29,10 +31,13 @@ data TyVar
   = BoundTv String		-- A type variable bound by a ForAll
   | SkolemTv String Unique	-- A skolem constant
   deriving Show                 
+
+
 data Type
   = ForAll [TyVar] Rho
   | Fun Type Type
   | TyCon TyCon
+  | TyLLVM LLVM.Type 
   | TyVar TyVar
   | MetaTv MetaTv
   deriving Show
