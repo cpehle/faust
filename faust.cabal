@@ -67,8 +67,7 @@ executable faust
                        llvm-general-pure,
                        optparse-applicative,
                        parsers,
-                       trifecta,
-                       unordered-containers
+                       trifecta
   
   -- Directories containing source files.
   hs-source-dirs:      src

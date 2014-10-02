@@ -21,8 +21,10 @@ data Term
   | Ann Term Sigma
   | Let Name Term Term
   | App Term Term
+  | Op Name [Term] 
   | Lit Literal
   | Atom String
+  | Assignment [Name] Term
   deriving Show
            
 type Unique = Int

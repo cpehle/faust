@@ -1,5 +1,6 @@
 module Parser where
-import           Control.Applicative ((<|>),(<$>),(<*>),(*>),(<**>),(<$),pure)
+       
+import           Control.Applicative ((<|>),(<$>),(<*>),(*>),(<**>), (<*),(<$),pure)
 import           Data.Char (generalCategory, GeneralCategory(MathSymbol), isLetter, isAlphaNum, isDigit, digitToInt)
 import           Data.HashSet (HashSet)
 import qualified Data.HashSet as HashSet
@@ -12,7 +13,7 @@ import           Text.Parser.Token
 import           Text.Parser.Token.Highlight
 import           Text.Parser.Token.Style
 import           Text.Trifecta.Parser
-
+            
 faustCommentStyle :: CommentStyle
 faustCommentStyle = CommentStyle "" "" "%" False
 
@@ -24,8 +25,6 @@ faustReservedIdents
     , "receive"
     , "module"
     , "fn"
-    , "with"
-    , "in"
     , "forall"
     ]
 
@@ -121,10 +120,7 @@ parseTerm = do { whiteSpace
                ; t <- term
                ; eof
                ; return t } 
-
--- atom :: Parser Syntax.Term
--- atom = Syntax.Atom <$> (ident identifiers <|> ident operators)
-
+          
 variable :: Parser Syntax.Term
 variable = Syntax.Variable <$> ident identifiers
          
@@ -174,6 +170,26 @@ rlet = do
 
 application :: Parser Syntax.Term
 application = foldl Syntax.App <$> atom <*> many atom
+
+expression = undefined
+
+subexpression = do
+  s <- simpleexpression
+  ss <- many simpleexpression
+  return $ s : ss
+
+simpleexpression = arrayidentifier <|> parens (expression)
+
+arrayidentifier = undefined
+
+assignment :: Parser Syntax.Term
+assignment =  do 
+  i <- ident identifiers
+  is <- many (ident identifiers)
+  reserve operators "←"
+  t <- term
+  return $ Syntax.Assignment (i:is) t
+
 {- 
    Grammar for types:
    ==================
