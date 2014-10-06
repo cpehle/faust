@@ -30,7 +30,7 @@ faustReservedIdents
 
 aplSymbols :: String
 aplSymbols = ['⌶'..'⍺']
-  
+
 isMathSymbol :: Char -> Bool
 isMathSymbol c = case generalCategory c of
                    MathSymbol -> True
@@ -47,6 +47,15 @@ operators = IdentifierStyle { _styleName = "operator"
                             , _styleHighlight = Operator
                             , _styleReservedHighlight = ReservedOperator
                             }
+  
+monadicoperators :: TokenParsing m => IdentifierStyle m
+monadicoperators = IdentifierStyle { _styleName = "monadic" 
+                                   , _styleStart = oneOf "|⍟*⌈⌊○!+−×÷~⍳⌽↑⍴⍕"
+                                   , _styleLetter = oneOf ""
+                                   , _styleReserved = set []
+                                   , _styleHighlight = Operator
+                                   , _styleReservedHighlight = ReservedOperator
+                                   }  
 
 identifiers :: TokenParsing m => IdentifierStyle m
 identifiers = IdentifierStyle { _styleName = "identifier"
@@ -102,17 +111,23 @@ fractExponent = (\fract expo n -> (fromInteger n + fract) * expo) <$> fraction <
 {-
   Grammar for expressions:
   ========================
-
   term ::= literal
          | var
          | term1 term2
-         | let var = term1 in term2
+         | let [assignment]* . term
          | term : sig
          | ( term )
        
   literal ::= integer
             | rational
             | string
+            
+  Grammar for types:
+  ==================
+  
+  sig = rho | forall tv1 .. tvn . rho 
+  rho = tv  | base | sig -> rho
+  base = Integer | Bool | Rational
 -}    
 
 parseTerm :: Parser Syntax.Term
@@ -171,31 +186,40 @@ rlet = do
 application :: Parser Syntax.Term
 application = foldl Syntax.App <$> atom <*> many atom
 
-expression = undefined
+expression :: Parser Syntax.Term
+expression = choice [try assignment, monadic, dyadic] 
 
-subexpression = do
-  s <- simpleexpression
-  ss <- many simpleexpression
-  return $ s : ss
+monadic :: Parser Syntax.Term
+monadic = do
+  mop <- ident monadicoperators
+  ex <- expression
+  return $ Syntax.Monadic mop ex
+  
+dyadic :: Parser Syntax.Term
+dyadic = do
+  undefined
+  undefined
+  
+simpleExpression = choice [variable, parens expression]
 
-simpleexpression = arrayidentifier <|> parens (expression)
+subexpression = simpleExpression
 
-arrayidentifier = undefined
+
+-- simpleexpression = arrayidentifier <|> parens (expression)
+
+-- arrayidentifier = undefined
 
 assignment :: Parser Syntax.Term
 assignment =  do 
   i <- ident identifiers
-  is <- many (ident identifiers)
   reserve operators "←"
-  t <- term
-  return $ Syntax.Assignment (i:is) t
+  t <- expression
+  return $ Syntax.Assignment i t
+
+
 
 {- 
-   Grammar for types:
-   ==================
-   sig = rho | forall tv1 .. tvn . rho
-   rho = tv  | base | sig -> rho
-   base = Integer | Bool | Rational
+  
 -}            
 
 sigma :: Parser Syntax.Type

@@ -24,7 +24,8 @@ data Term
   | Op Name [Term] 
   | Lit Literal
   | Atom String
-  | Assignment [Name] Term
+  | Assignment Name Term
+  | Monadic Name Term
   deriving Show
            
 type Unique = Int
