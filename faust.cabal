@@ -52,8 +52,8 @@ cabal-version:       >=1.10
 executable faust
   -- .hs or .lhs file containing the Main module.
   main-is:             Main.hs
-  extra-libraries: linenoise
-  extra-lib-dirs: lib/
+  -- extra-libraries: linenoise
+  -- extra-lib-dirs: lib/
   -- Modules included in this executable, other than Main.
   -- other-modules:       
   
@@ -63,9 +63,9 @@ executable faust
   -- Other library packages from which modules are imported.
   build-depends:       base >=4.7 && <4.8,
                        bytestring,
-                       llvm-general,
-                       llvm-general-pure,
                        optparse-applicative,
+                       unordered-containers,
+                       readline,
                        parsers,
                        trifecta
   

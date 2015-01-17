@@ -25,6 +25,7 @@ faustReservedIdents
     , "receive"
     , "module"
     , "fn"
+    , "iota"
     , "forall"
     ]
 
@@ -108,9 +109,11 @@ fractExponent = (\fract expo n -> (fromInteger n + fract) * expo) <$> fraction <
     | e < 0     = 1 % (10 ^ (-e))
     | otherwise = 10^e
 
-{-
+{-| 
+
   Grammar for expressions:
   ========================
+
   term ::= literal
          | var
          | term1 term2
@@ -128,7 +131,25 @@ fractExponent = (\fract expo n -> (fromInteger n + fract) * expo) <$> fraction <
   sig = rho | forall tv1 .. tvn . rho 
   rho = tv  | base | sig -> rho
   base = Integer | Bool | Rational
--}    
+
+
+
+-}
+
+{-|
+statementList:
+      statement
+      statement ';' statement
+-}
+statementList = sepBy ';' statement
+{-|
+   statement:
+      var '=' expression
+      expression  
+-}
+statement = {do v <- variable; reserve operators "="; expression} <|> expression
+               
+    
 
 parseTerm :: Parser Syntax.Term
 parseTerm = do { whiteSpace
@@ -156,8 +177,12 @@ term = choice [try ann, nonAnn] where
            return $ Syntax.Ann tm ty
   nonAnn = choice [lambda, rlet, application]
 
+
+
+--  (f : (x : Int y : Float) -> (a : Float b : String) . expr)
+--  (x : Int y : Float . expr)
 lambda :: Parser Syntax.Term
-lambda = reserve operators "\\" *> choice [try annLambda, ordlambda] where                      
+lambda = reserve identifiers "fn" *> choice [try annLambda, ordlambda] where                      
   annLambda = do 
     (v,ty) <- parens (do v <- ident identifiers
                          reserve operators ":"
@@ -187,27 +212,16 @@ application :: Parser Syntax.Term
 application = foldl Syntax.App <$> atom <*> many atom
 
 expression :: Parser Syntax.Term
-expression = choice [try assignment, monadic, dyadic] 
+expression = choice [try assignment, monadic] 
 
 monadic :: Parser Syntax.Term
 monadic = do
   mop <- ident monadicoperators
   ex <- expression
   return $ Syntax.Monadic mop ex
-  
-dyadic :: Parser Syntax.Term
-dyadic = do
-  undefined
-  undefined
-  
+
 simpleExpression = choice [variable, parens expression]
-
 subexpression = simpleExpression
-
-
--- simpleexpression = arrayidentifier <|> parens (expression)
-
--- arrayidentifier = undefined
 
 assignment :: Parser Syntax.Term
 assignment =  do 
@@ -215,12 +229,6 @@ assignment =  do
   reserve operators "←"
   t <- expression
   return $ Syntax.Assignment i t
-
-
-
-{- 
-  
--}            
 
 sigma :: Parser Syntax.Type
 sigma = choice [try (parens sigma), sigma', rho]

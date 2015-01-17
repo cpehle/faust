@@ -2,19 +2,19 @@
 module Main where
        
 import Data.Monoid (mempty)
-import Linenoise (linenoise, linenoiseHistoryAdd)
+import System.Console.Readline
 import Parser (parseTerm)
-import Text.Trifecta (parseByteString)
+import Text.Trifecta (parseString)
 
 readEvalPrintLoop :: IO ()
 readEvalPrintLoop
-  = do maybeLine <- linenoise ">>> "
+  = do maybeLine <- readline ">>> "
        case maybeLine of
          Nothing   -> return ()
          Just line -> do
            print line
-           linenoiseHistoryAdd line
-           let res = parseByteString parseTerm mempty line
+           addHistory line
+           let res = parseString parseTerm mempty line
            print res                 
            readEvalPrintLoop
 
